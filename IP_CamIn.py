@@ -1,4 +1,3 @@
-import cv2.cv as cv
 import cv2
 import numpy as np
 
@@ -66,7 +65,7 @@ def show_Window(purpose):
 	#show the required image(p) in the window
 	while(1):
 		cv2.imshow(purpose,p)
-		if cv2.waitKey(20) & 0xFF == 27 :
+		if cv2.waitKey(1) & 0xFF == 27 :
 			break
 	cv2.destroyAllWindows()
 
@@ -110,37 +109,37 @@ if calib :
 
 #read coordinates of pockets
 	show_Window_coords('Click on all pockets')
-	print pockets
+	print (pockets)
 
 #read red, black and white colour arrays(b,g,r)
 	show_Window('Click on all the red ends')
 	colorRed=colors
-	print colorRed
+	print (colorRed)
 	colors=[]
 	show_Window('Click on all the black coins')
 	colorBlack=colors
-	print colorBlack
+	print (colorBlack)
 	colors=[]
 	show_Window('Click on all the white coins')
 	colorWhite=colors
-	print colorWhite
+	print (colorWhite)
 	colors=[]
 
 #calculating and displaying ranges of red ends, and black white coins
 	calc_Range(colorRed)
-	print rangeRedEnd
+	print (rangeRedEnd)
 	calc_Range_BW(colorBlack)
 	rangeB=rangeBW
-	print rangeBW
+	print (rangeBW)
 	rangeBW=[[0,0],[0,0]]
 	calc_Range_BW(colorWhite)
-	print rangeBW
+	print (rangeBW)
 
 #once calibrated, set flag
 calib=0
 
 #find circles using the Hough Transform
-circles=cv2.HoughCircles(j,cv.CV_HOUGH_GRADIENT,1,5,param1=100,param2=15,minRadius=7,maxRadius=10)
+circles=cv2.HoughCircles(j,cv2.HOUGH_GRADIENT,1,5,param1=100,param2=15,minRadius=7,maxRadius=10)
 circles=np.uint16(np.around(circles))
 circlesW=[]
 circlesB=[]
@@ -161,8 +160,8 @@ cv2.imshow('Detected circles and centres',centrej)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-print circlesW
-print circlesB
+print (circlesW)
+print (circlesB)
 
 #show the coin classification(red for white, blue for black and unclassified remain red)
 for i in circlesW :
