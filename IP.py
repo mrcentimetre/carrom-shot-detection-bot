@@ -1,44 +1,53 @@
-import cv2.cv as cv
 import cv2
 import numpy as np
 
-#read image as grayscale(Hough needs a single channel image)
-j=cv2.imread('WithCoins.jpg',0)
-p=cv2.imread('WithCoins.jpg',-1)
-j=cv2.medianBlur(j,5)
-centrej=cv2.cvtColor(j,cv2.COLOR_GRAY2RGB)
+# Read image as grayscale (Hough needs a single channel image)
+j = cv2.imread('WithCoins.jpg', 0)
+p = cv2.imread('WithCoins.jpg')
 
-#find circles using the Hough Transform
-circles=cv2.HoughCircles(j,cv.CV_HOUGH_GRADIENT,1,5,param1=100,param2=15,minRadius=7,maxRadius=10)
-circles=np.uint16(np.around(circles))
-circlesW=[]
-circlesB=[]
-redEnds=[]
+# Apply median blur to the grayscale image
+j = cv2.medianBlur(j, 5)
 
-#show circles in green and centres in red
-#also classify coins based on the colors at their centres(values by impixel(i) calibration)
-for i in circles[0, :] :
-	cv2.circle(centrej,(i[0],i[1]),i[2],(0,255,0),2)
-	cv2.circle(centrej,(i[0],i[1]),2,(0,0,255),3)
-	if p[i[1],i[0],2]>170 and p[i[1],i[0],2]<250 and p[i[1],i[0],1]>50 and p[i[1],i[0],1]<110 and p[i[1],i[0],0]>30 and p[i[1],i[0],0]<80 :
-		redEnds.append([i[0],i[1]])
-	elif j[i[1],i[0]]>120 and j[i[1],i[0]]<160 :
-		circlesW.append([i[1],i[0]])
-	elif j[i[1],i[0]]>45 and j[i[1],i[0]]<90 :
-		circlesB.append([i[1],i[0]])
-cv2.imshow('Detected circles and centres',centrej)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# Convert grayscale image back to BGR for visualization
+centrej = cv2.cvtColor(j, cv2.COLOR_GRAY2BGR)
 
-print circlesW
-print circlesB
+# Find circles using the Hough Transform
+circles = cv2.HoughCircles(j, cv2.HOUGH_GRADIENT, dp=1, minDist=5, param1=100, param2=15, minRadius=7, maxRadius=10)
 
-#show the coin classification(red for white, blue for black and unclassified remain red)
-for i in circlesW :
-	cv2.circle(centrej,(i[1],i[0]),2,(0,255,0),3)
-for i in circlesB :
-	cv2.circle(centrej,(i[1],i[0]),2,(255,0,0),3)
-cv2.imshow('Classified circles',centrej)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-#sweg bitches!
+if circles is not None:
+    circles = np.uint16(np.around(circles))
+    circlesW = []
+    circlesB = []
+    redEnds = []
+
+    # Show circles in green and centers in red
+    # Also classify coins based on the colors at their centers (values by impixel(i) calibration)
+    for i in circles[0, :]:
+        cv2.circle(centrej, (i[0], i[1]), i[2], (0, 255, 0), 2)  # Circle outline
+        cv2.circle(centrej, (i[0], i[1]), 2, (0, 0, 255), 3)  # Circle center
+        if 170 < p[i[1], i[0], 2] < 250 and 50 < p[i[1], i[0], 1] < 110 and 30 < p[i[1], i[0], 0] < 80:
+            redEnds.append([i[0], i[1]])
+        elif 120 < j[i[1], i[0]] < 160:
+            circlesW.append([i[1], i[0]])
+        elif 45 < j[i[1], i[0]] < 90:
+            circlesB.append([i[1], i[0]])
+
+    cv2.imshow('Detected circles and centers', centrej)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    print("White Circles:", circlesW)
+    print("Black Circles:", circlesB)
+
+    # Show the coin classification (red for white, blue for black and unclassified remain green)
+    for i in circlesW:
+        cv2.circle(centrej, (i[1], i[0]), 2, (0, 0, 255), 3)  # White coin
+    for i in circlesB:
+        cv2.circle(centrej, (i[1], i[0]), 2, (255, 0, 0), 3)  # Black coin
+
+    cv2.imshow('Classified circles', centrej)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+else:
+    print("No circles detected")
