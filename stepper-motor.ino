@@ -12,9 +12,9 @@ void setup() {
   // Move the motor 4000 steps clockwise
   for(long stepCount = 1; stepCount <= 20000; stepCount++) {  // Changed int to long
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(0.001);
+    delayMicroseconds(100);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(1000);
+    delayMicroseconds(100);
   }
 }
 
