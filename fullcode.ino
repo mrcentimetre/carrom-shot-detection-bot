@@ -1,7 +1,12 @@
 #include <Servo.h>
 
-int stepPin = 2;       // Connect to the step pin of the driver
-int directionPin = 3;  // Connect to the direction pin of the driver
+// Stepper motor pins
+int stepPin = 2;       
+int directionPin = 3;  
+
+// Ultrasonic Sensor Pins
+const int trigPin = 12;
+const int echoPin = 13;
 
 // Fixed positions
 const long initialPosition = 0;
@@ -33,6 +38,9 @@ void setup() {
   pinMode(stepPin, OUTPUT);
   pinMode(directionPin, OUTPUT);
   Serial.begin(9600);  // Initialize serial communication
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
   thirdArmServo.write(8);
   delay(1000);
@@ -151,6 +159,12 @@ void moveToPosition(long steps, bool direction) {
     delayMicroseconds(166); // 1000000 microseconds / 6000 steps per second = 166 microseconds
     digitalWrite(stepPin, LOW);
     delayMicroseconds(166); // 1000000 microseconds / 6000 steps per second = 166 microseconds
+
+    // Check distance from ultrasonic sensor
+    if (getUltrasonicDistance() <= 10) {
+      Serial.println("Object detected within 10 cm. Stopping stepper motor.");
+      break;
+    }
   }
 
   // Update current position
@@ -197,4 +211,27 @@ void rotateServoGradually(int targetAngle) {
     }
   }
   currentAngle = targetAngle;  // Update the current angle
+}
+
+// Function to get the distance from the ultrasonic sensor
+long getUltrasonicDistance() {
+  // Clear the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  
+  // Set the trigPin HIGH for 10 microseconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Read the echoPin, and calculate the distance
+  long duration = pulseIn(echoPin, HIGH);
+  long distance = duration * 0.034 / 2;  // Calculate distance in cm
+  
+  // Print the distance to the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+  
+  return distance;
 }
