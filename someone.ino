@@ -1,6 +1,6 @@
 #include <Servo.h>
 
-int stepPin = 2;      // Connect to the step pin of the driver
+int stepPin = 2;       // Connect to the step pin of the driver
 int directionPin = 3;
 
 // Conversion ratios based on provided measurements
@@ -24,6 +24,10 @@ const int relayPin = 7; // Pin connected to relay module
 
 // Current angle of the additional servo
 int currentAngle = 90;  // Initial angle (starting position)
+
+// Variables to store received data
+float distance;
+int targetAngle;
 
 void setup() {
   pinMode(stepPin, OUTPUT);
@@ -51,15 +55,16 @@ void setup() {
   // Move 15 cm in the HIGH direction
   digitalWrite(directionPin, HIGH);
   moveStepper(steps15cm);
-
-  // Prompt for the distance input
-  Serial.println("Enter the distance in cm:");
 }
 
 void loop() {
   // Check if there's any serial input
   if (Serial.available() > 0) {
-    float distance = Serial.parseFloat();
+    // Read the first value for distance
+    distance = Serial.parseFloat();
+    // Read the second value for target angle
+    targetAngle = Serial.parseInt();
+
     long stepsInput = distanceToSteps(distance);
 
     if (stepsInput != -1) {
@@ -159,46 +164,27 @@ void rotateServoGradually(int targetAngle) {
 
 // Function to handle solenoid rotation
 void handleSolenoidRotation() {
-  Serial.println("Enter an angle between 0 and 180 for the solenoid rotation:");
-  delay(5000);
-  int targetAngle = Serial.parseInt();
-  Serial.print("Received target angle: ");
+  // Use the received target angle
+  Serial.print("Using received target angle: ");
   Serial.println(targetAngle);
 
-  // Wait for valid input
-  while (true) {
-    if (Serial.available() > 0) {
-      while (Serial.available() > 0) {
-        Serial.read();
-        // Read the input angle from the serial monitor
-    int targetAngle = Serial.parseInt();
-      }
+  // Rotate to target angle
+  rotateServoGradually(targetAngle);
+  Serial.print("Servo rotated to ");
+  Serial.print(targetAngle);
+  Serial.println(" degrees.");
+  delay(2000);
 
-      if (targetAngle >= 0 && targetAngle <= 180) {
-        // Rotate to target angle
-        rotateServoGradually(targetAngle);
-        Serial.print("Servo rotated to ");
-        Serial.print(targetAngle);
-        Serial.println(" degrees.");
-delay(2000);
-        
-        // Solenoid code
-        
-        // Turn the solenoid on (activate the relay)
-        digitalWrite(relayPin, HIGH);
-        delay(1000); // Keep the solenoid on for 1 second
+  // Solenoid code
 
-        // Turn the solenoid off (deactivate the relay)
-        digitalWrite(relayPin, LOW);
+  // Turn the solenoid on (activate the relay)
+  digitalWrite(relayPin, HIGH);
+  delay(1000); // Keep the solenoid on for 1 second
 
-        // Rotate the servo back to 90 degrees gradually
-        rotateServoGradually(90);
-        Serial.println("Servo returned to 90 degrees.");
-        break;  // Exit the loop once a valid angle has been processed
-      } else {
-        Serial.println("Invalid input. Enter an angle between 0 and 180:");
-      }
-    }
-    delay(100); // Short delay to prevent blocking the loop
-  }
+  // Turn the solenoid off (deactivate the relay)
+  digitalWrite(relayPin, LOW);
+
+  // Rotate the servo back to 90 degrees gradually
+  rotateServoGradually(90);
+  Serial.println("Servo returned to 90 degrees.");
 }
