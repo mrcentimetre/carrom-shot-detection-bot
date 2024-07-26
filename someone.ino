@@ -51,10 +51,7 @@ void setup() {
 
   // Calculate steps for 15 cm
   steps15cm = distanceToSteps(15);
-
-  // Move 15 cm in the HIGH direction
-  digitalWrite(directionPin, HIGH);
-  moveStepper(steps15cm);
+  
 }
 
 void loop() {
@@ -85,7 +82,7 @@ void loop() {
       delay(1000); // Wait for 1 second for the servo to reach the position
 
       // Move the third arm servo
-      delay(2000);
+      delay(3000);
       thirdArmServo.write(65);
       delay(1000);
       thirdArmServo.write(8);
@@ -104,20 +101,15 @@ void loop() {
       moveStepper(steps6cm);
 
       // Handle solenoid rotation
-      handleSolenoidRotation();
+      handleSolenoidRotation(targetAngle);
 
       // Move back to the starting position
-      long stepsBack = steps15cm + stepsInput - steps6cm;
+      long stepsBack = stepsInput - steps6cm;
       moveStepper(stepsBack);
 
       Serial.println("Movement completed.");
     } else {
       Serial.println("Invalid distance. Please enter a valid cm value:");
-    }
-
-    // Prevent further execution of the loop
-    while (1) {
-      // Do nothing
     }
   }
 }
@@ -163,11 +155,7 @@ void rotateServoGradually(int targetAngle) {
 }
 
 // Function to handle solenoid rotation
-void handleSolenoidRotation() {
-  // Use the received target angle
-  Serial.print("Using received target angle: ");
-  Serial.println(targetAngle);
-
+void handleSolenoidRotation(int targetAngle) {
   // Rotate to target angle
   rotateServoGradually(targetAngle);
   Serial.print("Servo rotated to ");
